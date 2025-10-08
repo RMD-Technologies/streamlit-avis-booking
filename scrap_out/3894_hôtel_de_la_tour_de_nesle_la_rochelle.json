@@ -1,0 +1,45 @@
+{
+  "id": 3894,
+  "name": "HÔTEL DE LA TOUR DE NESLE",
+  "town": "LA ROCHELLE",
+  "url": "https://www.booking.com/hotel/fr/domaine-de-la-rue-de-la-tour.fr.html",
+  "booking_id": 7237128,
+  "scrap": {
+    "meta": {
+      "hotel_staff": 9.9862232208252,
+      "hotel_services": 9.9862232208252,
+      "hotel_clean": 9.9862232208252,
+      "hotel_comfort": 9.97423934936523,
+      "hotel_value": 9.42707824707031,
+      "hotel_location": 8.90547847747803,
+      "hotel_free_wifi": 7.5
+    },
+    "reviews": [
+      {
+        "review_score": 9.0,
+        "reviewed_date": "2024-09-16 10:35:33",
+        "is_approved": true,
+        "helpful_votes": null,
+        "review_url": "b005d716a8061e71",
+        "guest_username": "Kees",
+        "guest_type": "Voyageur individuel",
+        "guest_country": "France",
+        "guest_country_code": "fr",
+        "guest_avatar_url": "https://lh3.googleusercontent.com/-ec08uCjOsF4/AAAAAAAAAAI/AAAAAAAAEtU/rYzyvKbaWx8/s96-c/photo.jpg",
+        "guest_anonymous": false,
+        "review_title": null,
+        "positive_text": null,
+        "negative_text": null,
+        "language": "en",
+        "stay_status": "stayed",
+        "checkin_date": "2024-09-14",
+        "checkout_date": "2024-09-15",
+        "num_nights": 1,
+        "room_name": "Chambre Double Standard",
+        "room_id": "723712802",
+        "positive_topics": [],
+        "negative_topics": []
+      }
+    ]
+  }
+}

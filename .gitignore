@@ -1,0 +1,6 @@
+.venv
+.vscode
+driver
+scrap
+*.csv
+*.xlsx

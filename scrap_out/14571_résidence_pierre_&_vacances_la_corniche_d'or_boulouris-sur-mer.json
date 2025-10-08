@@ -1,0 +1,18 @@
+{
+  "id": 14571,
+  "name": "Résidence Pierre & Vacances La Corniche d'or",
+  "town": "Boulouris-sur-Mer",
+  "url": "https://www.booking.com/hotel/fr/la-corniche-d-or.fr.html",
+  "booking_id": 1402183,
+  "scrap": {
+    "meta": {
+      "hotel_staff": 8.92841243743896,
+      "hotel_services": 8.92841243743896,
+      "hotel_clean": 8.89943599700928,
+      "hotel_comfort": 8.44060516357422,
+      "hotel_value": 8.92841243743896,
+      "hotel_location": 9.41621875762939
+    },
+    "reviews": []
+  }
+}

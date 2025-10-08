@@ -1,0 +1,18 @@
+{
+  "id": 11648,
+  "name": "HÔTEL SAINT NICOLAS",
+  "town": " ",
+  "url": "https://www.booking.com/hotel/al/saint-nicolas.fr.html",
+  "booking_id": 14192296,
+  "scrap": {
+    "meta": {
+      "hotel_staff": 10.0,
+      "hotel_services": 10.0,
+      "hotel_clean": 10.0,
+      "hotel_comfort": 10.0,
+      "hotel_value": 10.0,
+      "hotel_location": 10.0
+    },
+    "reviews": []
+  }
+}

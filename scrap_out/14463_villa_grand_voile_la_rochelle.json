@@ -1,0 +1,18 @@
+{
+  "id": 14463,
+  "name": "Villa Grand Voile",
+  "town": "LA ROCHELLE",
+  "url": "https://www.booking.com/hotel/fr/villa-grand-voile-christopher-coutanceau.fr.html",
+  "booking_id": 11747750,
+  "scrap": {
+    "meta": {
+      "hotel_staff": 9.8807544708252,
+      "hotel_services": 8.78875923156738,
+      "hotel_clean": 9.29096412658691,
+      "hotel_comfort": 9.76230049133301,
+      "hotel_value": 7.99876928329468,
+      "hotel_location": 9.38675498962402
+    },
+    "reviews": []
+  }
+}
