@@ -35,7 +35,7 @@ def filter_reviews(df, guest_types, room_names):
 
 def get_topic_counts_stacked(df, as_percentage=False, top_n=10):
     df_filtered = df.copy()
-    total_reviews = len(df_filtered) if as_percentage else 1
+    total_reviews = max(len(df_filtered), 1) if as_percentage else 1
     
     # Handle empty dataframe or missing columns
     if df_filtered.empty or "positive_topics" not in df_filtered.columns:
