@@ -5,7 +5,7 @@ import datetime
 import time
 import random
 from pprint import pprint
-from sqlite import SQLiteSingleton
+from postgres import PostgresSingleton
 from utils.filter_hotel_to_select import filter_hotel_to_select
 
 st.set_page_config(page_title="2. Scrap Avis Booking", layout="centered")
@@ -15,7 +15,7 @@ st.write("Récupération des **avis clients Booking.com** à partir des identifi
 # ========================================
 # Singleton SQLite
 # ========================================
-db = SQLiteSingleton()
+db = PostgresSingleton()
 conn = db.get_connection()
 
 GRAPHQL_ENDPOINT = "https://www.booking.com/dml/graphql?lang=fr"
@@ -119,8 +119,7 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
 
     while skip < total_reviews:
         wait()
-        
-        end = min(skip + MAX_LIMIT, total_reviews)
+
 
         payload['variables']['input']['skip'] = skip
 
@@ -137,7 +136,7 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
         if progress:
             progress.progress(min(collected / total_reviews, 1.0))
         
-        skip += end
+        skip += MAX_LIMIT
 
     if progress:
         progress.empty()
@@ -155,7 +154,7 @@ if df_hotels.empty:
     st.info("Aucun hôtel disponible dans la base.")
 else:
     # Appel du module de filtrage personnalisé
-    selected_hotels = filter_hotel_to_select(df_hotels)
+    selected_hotels = filter_hotel_to_select(df_hotels, is_booking_id=True)
 
     if selected_hotels is not None and not selected_hotels.empty:
         st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")

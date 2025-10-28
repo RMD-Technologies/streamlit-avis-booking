@@ -50,7 +50,7 @@ def setup_driver():
 
     if system == "Linux" and "arm" in machine.lower():
         # Probablement Raspberry Pi
-        driver_path = "/usr/bin/geckodriver"  # Assurez-vous qu'il est installé via apt
+        driver_path = "driver/geckodriver-rp"  # Assurez-vous qu'il est installé via apt
         service = Service(driver_path)
     else:
         # PC classique : utiliser GeckoDriverManager
@@ -104,10 +104,10 @@ def get_hotel_id(url, timeout=10):
 # ==============================
 # Interface Streamlit
 # ==============================
-from sqlite.SQLiteSingleton import SQLiteSingleton
+from postgres.PostgresSingleton import PostgresSingleton
 from utils.filter_hotel_to_select import filter_hotel_to_select
 
-db = SQLiteSingleton()
+db = PostgresSingleton()
 
 # Get all hotels from DB
 df_hotels = db.get_all_hotels()  # id as index
