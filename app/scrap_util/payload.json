@@ -1,0 +1,22 @@
+{
+  "operationName": "ReviewList",
+  "variables": {
+    "shouldShowReviewListPhotoAltText": true,
+    "input": {
+      "hotelId": 1189592,
+      "ufi": -1438604,
+      "hotelCountryCode": "fr",
+      "sorter": "MOST_RELEVANT",
+      "skip": 0,
+      "limit": 25,
+      "hotelScore": 6.9,
+      "upsortReviewUrl": "",
+      "searchFeatures": {
+        "destId": -1438604,
+        "destType": "CITY"
+      }
+    }
+  },
+  "extensions": {},
+  "query": "query ReviewList($input: ReviewListFrontendInput!, $shouldShowReviewListPhotoAltText: Boolean = false) {\n  reviewListFrontend(input: $input) {\n    ... on ReviewListFrontendResult {\n      ratingScores {\n        name\n        translation\n        value\n        ufiScoresAverage {\n          ufiScoreLowerBound\n          ufiScoreHigherBound\n          __typename\n        }\n        __typename\n      }\n      topicFilters {\n        id\n        name\n        isSelected\n        translation {\n          id\n          name\n          __typename\n        }\n        __typename\n      }\n      reviewScoreFilter {\n        name\n        value\n        count\n        __typename\n      }\n      languageFilter {\n        name\n        value\n        count\n        countryFlag\n        __typename\n      }\n      timeOfYearFilter {\n        name\n        value\n        count\n        __typename\n      }\n      customerTypeFilter {\n        count\n        name\n        value\n        __typename\n      }\n      reviewCard {\n        reviewUrl\n        guestDetails {\n          username\n          avatarUrl\n          countryCode\n          countryName\n          avatarColor\n          showCountryFlag\n          anonymous\n          guestTypeTranslation\n          __typename\n        }\n        bookingDetails {\n          customerType\n          roomId\n          roomType {\n            id\n            name\n            __typename\n          }\n          checkoutDate\n          checkinDate\n          numNights\n          stayStatus\n          __typename\n        }\n        reviewedDate\n        isTranslatable\n        helpfulVotesCount\n        reviewScore\n        textDetails {\n          title\n          positiveText\n          negativeText\n          textTrivialFlag\n          lang\n          __typename\n        }\n        isApproved\n        partnerReply {\n          reply\n          __typename\n        }\n        positiveHighlights {\n          start\n          end\n          __typename\n        }\n        negativeHighlights {\n          start\n          end\n          __typename\n        }\n        editUrl\n        photos {\n          id\n          urls {\n            size\n            url\n            __typename\n          }\n          kind\n          mlTagHighestProbability @include(if: $shouldShowReviewListPhotoAltText)\n          __typename\n        }\n        __typename\n      }\n      reviewsCount\n      sorters {\n        name\n        value\n        __typename\n      }\n      __typename\n    }\n    ... on ReviewsFrontendError {\n      statusCode\n      message\n      __typename\n    }\n    __typename\n  }\n}\n"
+}
