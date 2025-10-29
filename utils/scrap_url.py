@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
-from webdriver_manager.firefox import GeckoDriverManager
+
 
 options = Options()
 options.set_preference("dom.webdriver.enabled", False)  # Try to hide Selenium
@@ -25,7 +25,7 @@ options.set_preference("general.useragent.override",
                        "(KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")  # Fake user-agent
 
 
-driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
+driver = webdriver.Firefox(service=Service("driver/geckodriver"), options=options)
 
 
 def get_hotel_url(hotel, town):
@@ -94,6 +94,3 @@ def main():
     results_df = pd.DataFrame(results)
     results_df.to_csv("hotels_with_urls.csv", index=False, encoding="utf-8")
     print("Results saved to 'hotels_with_urls.csv'")
-
-if __name__ == "__main__":
-    main()

@@ -89,8 +89,8 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
     scores = data.get('ratingScores', {})
     meta = {s['name']: s['value'] for s in scores}
 
-    db.insert_or_update_hotel(
-        id=hotel_id,
+    db.insert_booking(
+        id_kalio=hotel_id,
         hotel_staff=meta.get('hotel_staff'),
         hotel_services=meta.get('hotel_services'),
         hotel_clean=meta.get('hotel_clean'),
@@ -148,13 +148,13 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
 
 
 # Récupérer tous les hôtels depuis SQLite
-df_hotels = db.get_all_hotels()
+df_hotels = db.get_all_kalios()
 
 if df_hotels.empty:
     st.info("Aucun hôtel disponible dans la base.")
 else:
     # Appel du module de filtrage personnalisé
-    selected_hotels = filter_hotel_to_select(df_hotels, is_booking_id=True)
+    selected_hotels = filter_hotel_to_select(df_hotels, is_id_booking=True)
 
     if selected_hotels is not None and not selected_hotels.empty:
         st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")
@@ -167,7 +167,7 @@ else:
             for i, row in enumerate(selected_hotels.itertuples()):
 
                 hotel_id = row.Index
-                booking_id = row.booking_id
+                booking_id = row.id_booking
                 name = row.name
                 town = row.town
 

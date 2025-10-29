@@ -21,50 +21,6 @@ with open('payload.json', 'r', encoding='utf-8') as file:
 with open('header.json', 'r', encoding='utf-8') as file:
     GRAPHQL_HEADER = json.load(file)
 
-from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox.options import Options
-from webdriver_manager.firefox import GeckoDriverManager
-
-options = Options()
-options.set_preference("dom.webdriver.enabled", False)  # Try to hide Selenium
-options.set_preference("useAutomationExtension", False)
-options.set_preference("general.useragent.override", 
-                       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                       "(KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36")  # Fake user-agent
-options.add_argument("--headless")  # VERY IMPORTANT on Pi without GUI
-
-
-def get_hotel_id(url, timeout=10):
-    driver = webdriver.Firefox(service=Service("driver/geckodriver"), options=options)
-
-    # Open the page
-    driver.get(url)
-    
-    # Wait a random time to mimic human reading
-    wait()
-    
-    try:
-        # Wait for the input element with name="hotel_id" to appear
-        hotel_input = WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located((By.NAME, "hotel_id"))
-        )
-        # Scroll into view (mimic human behavior)
-        driver.execute_script("arguments[0].scrollIntoView(true);", hotel_input)
-        time.sleep(random.uniform(0.5, 1.5))
-        
-        # Get the value attribute
-        hotel_id = hotel_input.get_attribute("value")
-        hotel_id = int(hotel_id)
-    except Exception as e:
-        print(f"Hotel ID input not found. Error: {e}")
-        hotel_id = None
-    driver.quit()
-    return hotel_id
-
 def post_graphql(payload):
     response = requests.post(GRAPHQL_ENDPOINT, headers=GRAPHQL_HEADER, json=payload)
     return response.json()
@@ -127,7 +83,7 @@ def scrap(hotel_id):
     review_count = response['data']['reviewListFrontend']['reviewsCount']
 
     skip = MAX_LIMIT
-# Create a tqdm progress bar
+
     with tqdm(total=review_count) as pbar:
         pbar.update(len(cards))
         while skip < review_count:
@@ -182,25 +138,22 @@ def sanitize_filename(s):
 
 def main():
     df = read_hotels_csv()
-    tuples_list = list(df[["id", "name", "town", "url"]].itertuples(index=False, name=None))
+    tuples_list = list(df[["id", "name", "town", "url", "booking_id"]].itertuples(index=False, name=None))
 
 
-    for id_, name, town, url in tqdm(tuples_list):
+    for id_, name, town, url, booking_id in tqdm(tuples_list):
         D = {
             'id': id_,
             'name': name,
             'town': town,
             'url': url,
-            'booking_id': -1,
+            'booking_id': booking_id,
             'scrap': {}
         }
 
         # Scrape the reviews
         try:
-            hotel_id = get_hotel_id(url)
-            if not hotel_id: continue
-            D['booking_id'] = hotel_id
-            D_reviews = scrap(hotel_id)
+            D_reviews = scrap(booking_id)
             D['scrap'] = D_reviews
 
             # Create filename based on id, name, town
@@ -209,6 +162,3 @@ def main():
             save_to_file(D, 'scrap/'+filename)
         except Exception as e:
             print(e)
-
-if __name__ == "__main__":
-    main()

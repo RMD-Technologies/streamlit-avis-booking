@@ -110,7 +110,8 @@ from utils.filter_hotel_to_select import filter_hotel_to_select
 db = PostgresSingleton()
 
 # Get all hotels from DB
-df_hotels = db.get_all_hotels()  # id as index
+df_hotels = db.get_all_kalios()  # id as index
+
 if df_hotels.empty:
     st.info("Aucun hôtel disponible dans la base.")
 else:
@@ -140,8 +141,8 @@ else:
                 status_text.text(f"🔍 Recherche : {name} ({town})")
                 try:
                     url = get_hotel_url(driver, name, town)
-                    booking_id = get_hotel_id(url)
-                    db.insert_or_update_hotel(id=id_, url=url, booking_id=booking_id)
+                    id_booking = get_hotel_id(url)
+                    db.insert_or_update_kalio(id_kalio=id_, url=url, id_booking=id_booking)
                 except Exception as e:
                     # Log the error but continue
                     st.error(f"⚠️ Erreur pour {name} ({town}): {e}")

@@ -30,12 +30,12 @@ if uploaded_file is not None:
         else:
             # Populate database
             for _, row in df_csv.iterrows():
-                db.insert_or_update_hotel(
-                    id=int(row["id"]),
+                db.insert_or_update_kalio(
+                    id_kalio=int(row["id"]),
                     name=row["name"],
                     town=row["town"],
-                    url=None,
-                    booking_id=None
+                    url=row.get("url"),
+                    id_booking=row.get("id_booking")
                 )
             st.success(f"✅ {len(df_csv)} hôtels ajoutés ou mis à jour dans la base !")
     except Exception as e:
@@ -44,7 +44,7 @@ if uploaded_file is not None:
 # --------------------
 # Statistiques
 # --------------------
-hotels_count = db.get_hotel_count()
+hotels_count = db.get_kalio_count()
 st.subheader("📊 Statistiques")
 st.write(f"- Nombre d'hôtels dans la base : **{hotels_count}**")
 
@@ -52,7 +52,7 @@ st.write(f"- Nombre d'hôtels dans la base : **{hotels_count}**")
 # Affichage des hôtels
 # --------------------
 if hotels_count > 0:
-    df_hotels = db.get_all_hotels()
+    df_hotels = db.get_all_kalios()
     st.dataframe(df_hotels)
 else:
     st.info("Aucun hôtel stocké dans la base pour le moment.")

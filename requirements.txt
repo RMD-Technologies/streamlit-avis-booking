@@ -1,7 +1,6 @@
 selenium
 webdriver-manager
 pandas
-openpyxl
-tqdm
 streamlit
-plotly
+psycopg2
+SQLAlchemy
