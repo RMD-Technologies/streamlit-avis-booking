@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from postgres.PostgresSingleton import PostgresSingleton
-import os
 
 st.set_page_config(page_title="🏠 Accueil", layout="centered")
 st.title("🏨 Tableau de bord Booking.com")
@@ -9,7 +8,7 @@ st.title("🏨 Tableau de bord Booking.com")
 # --------------------
 # Singleton SQLite
 # --------------------
-db = PostgresSingleton(os.getenv("DATABASE_URL"))
+db = PostgresSingleton()
 
 # --------------------
 # CSV upload to populate DB

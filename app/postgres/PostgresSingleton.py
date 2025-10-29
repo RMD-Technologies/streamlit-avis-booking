@@ -3,22 +3,23 @@ import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
 from datetime import date
+import os
 
 
 class PostgresSingleton:
     _instance = None
     _lock = threading.Lock()  # pour thread-safe
 
-    def __new__(cls, db_url="postgresql://user:password@localhost:5432/booking_reviews"):
+    def __new__(cls):
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
                     cls._instance = super(PostgresSingleton, cls).__new__(cls)
-                    cls._instance._init_db(db_url)
+                    cls._instance._init_db()
         return cls._instance
 
-    def _init_db(self, db_url):
-        self.db_url = db_url
+    def _init_db(self):
+        db_url = os.getenv("DATABASE_URL")
 
         # SQLAlchemy
         self.sql_alchemy_engine = create_engine(
@@ -26,7 +27,7 @@ class PostgresSingleton:
         )
 
         # psycopg2
-        self.conn = psycopg2.connect(self.db_url)
+        self.conn = psycopg2.connect(db_url)
         self.conn.autocommit = True
         self._create_tables()
 

@@ -1,7 +1,7 @@
 .venv
 .vscode
 driver
-scrap
+output
 *.csv
 *.xlsx
 __pycache__
