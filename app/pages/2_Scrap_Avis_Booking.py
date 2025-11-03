@@ -106,6 +106,7 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers):
 
     payload = payload_template.copy()
     payload['variables']['input']['hotelId'] = int(booking_id)
+    if not last_review_date: payload['variables']['input']['sorter'] = "OLDER_FIRST"
 
     # First call
     response = post_graphql(payload, headers)

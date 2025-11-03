@@ -288,4 +288,40 @@ class PostgresSingleton:
             print(f"❌ Error fetching last reviewed date for id_kalio={id_kalio}: {e}")
             return None
     
-    from datetime import datetime, date
+    def get_review_texts_by_ids(self, id_kalios):
+        """
+        Returns a dictionary mapping each id_kalio to a list of reviews
+        (review_title, positive_text, negative_text).
+        id_kalios: list of integers
+        """
+        if not id_kalios:
+            return {}
+
+        cursor = self.get_cursor()
+        try:
+            # Create placeholders for SQL IN clause
+            placeholders = ", ".join(["%s"] * len(id_kalios))
+            query = f"""
+                SELECT id_kalio, review_title, positive_text, negative_text
+                FROM reviews
+                WHERE id_kalio IN ({placeholders})
+                ORDER BY id_kalio;
+            """
+            cursor.execute(query, id_kalios)
+            rows = cursor.fetchall()
+
+            result = {}
+            for row in rows:
+                id_kalio, title, positive, negative = row
+                if id_kalio not in result:
+                    result[id_kalio] = []
+                result[id_kalio].append({
+                    "review_title": title,
+                    "positive_text": positive,
+                    "negative_text": negative
+                })
+            return result
+
+        except Exception as e:
+            print(f"❌ Error fetching reviews for id_kalios={id_kalios}: {e}")
+            return {}
