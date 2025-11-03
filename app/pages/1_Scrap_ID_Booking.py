@@ -109,47 +109,39 @@ from utils.filter_hotel_to_select import filter_hotel_to_select
 
 db = PostgresSingleton()
 
-# Get all hotels from DB
-df_hotels = db.get_all_kalios()  # id as index
+selected_hotels = filter_hotel_to_select()
 
-if df_hotels.empty:
-    st.info("Aucun hôtel disponible dans la base.")
-else:
-    # Call the custom Streamlit module for filtering
-    selected_hotels = filter_hotel_to_select(
-        df_hotels,
-    )
+if selected_hotels is not None and not selected_hotels.empty:
+    st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")
 
-    if selected_hotels is not None and not selected_hotels.empty:
-        st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")
+    if st.button("🚀 Lancer le scraping des hôtels sélectionnés"):
+        with st.spinner("Initialisation du navigateur..."):
+            driver = setup_driver()
 
-        if st.button("🚀 Lancer le scraping des hôtels sélectionnés"):
-            with st.spinner("Initialisation du navigateur..."):
-                driver = setup_driver()
+        results = []
+        total = len(selected_hotels)
+        progress_bar = st.progress(0)
+        status_text = st.empty()
 
-            results = []
-            total = len(selected_hotels)
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-
-            # Iterate over selected hotels
-            for count, (i, row) in enumerate(selected_hotels.iterrows(), start=1):
-                id_ = i  # still use index for DB
-                name = row["name"] if pd.notna(row["name"]) else ""
-                town = row["town"] if pd.notna(row["town"]) else ""
-
-                status_text.text(f"🔍 Recherche : {name} ({town})")
-                try:
+        # Iterate over selected hotels
+        for count, (i, row) in enumerate(selected_hotels.iterrows(), start=1):
+            id_ = i  # still use index for DB
+            name = row["name"] if pd.notna(row["name"]) else ""
+            town = row["town"] if pd.notna(row["town"]) else ""
+            url = row["url"] if pd.notna(row["url"]) else None
+            status_text.text(f"🔍 Recherche : {name} ({town})")
+            try:
+                if not url:
                     url = get_hotel_url(driver, name, town)
-                    id_booking = get_hotel_id(url)
-                    db.insert_or_update_kalio(id_kalio=id_, url=url, id_booking=id_booking)
-                except Exception as e:
-                    # Log the error but continue
-                    st.error(f"⚠️ Erreur pour {name} ({town}): {e}")
+                id_booking = get_hotel_id(url)
+                db.insert_or_update_kalio(id_kalio=id_, url=url, id_booking=id_booking)
+            except Exception as e:
+                # Log the error but continue
+                st.error(f"⚠️ Erreur pour {name} ({town}): {e}")
 
-                progress_bar.progress(count / total)
+            progress_bar.progress(count / total)
 
-            driver.quit()
-            st.success("✅ Scraping terminé et base mise à jour avec succès !")
-    else:
-        st.info("Veuillez sélectionner au moins un hôtel à scraper.")
+        driver.quit()
+        st.success("✅ Scraping terminé et base mise à jour avec succès !")
+else:
+    st.info("Veuillez sélectionner au moins un hôtel à scraper.")

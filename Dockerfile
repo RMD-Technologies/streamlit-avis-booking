@@ -34,5 +34,9 @@ COPY app/ .
 # Expose the default Streamlit port
 EXPOSE 8501
 
+# Print debug
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=UTF-8
+
 # Run the Streamlit app
 CMD ["streamlit", "run", "Home.py", "--server.port=8501", "--server.address=0.0.0.0"]

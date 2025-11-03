@@ -51,7 +51,7 @@ st.write(f"- Nombre d'hôtels dans la base : **{hotels_count}**")
 # Affichage des hôtels
 # --------------------
 if hotels_count > 0:
-    df_hotels = db.get_all_kalios()
+    df_hotels = db.get_all_kalios_with_last_booking_and_score()
     st.dataframe(df_hotels)
 else:
     st.info("Aucun hôtel stocké dans la base pour le moment.")

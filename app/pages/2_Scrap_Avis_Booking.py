@@ -1,10 +1,9 @@
 import streamlit as st
 import json
 import requests
-import datetime
+from datetime import datetime, date
 import time
 import random
-from pprint import pprint
 from postgres import PostgresSingleton
 from utils.filter_hotel_to_select import filter_hotel_to_select
 
@@ -41,7 +40,7 @@ def extract_review_info(card):
     
     # Basic review info
     info['review_score'] = card.get('reviewScore')
-    info['reviewed_date'] = datetime.datetime.fromtimestamp(card.get('reviewedDate')).strftime('%Y-%m-%d %H:%M:%S') if card.get('reviewedDate') else None
+    info['reviewed_date'] = datetime.fromtimestamp(card.get('reviewedDate')).strftime('%Y-%m-%d %H:%M:%S') if card.get('reviewedDate') else None
     info['is_approved'] = card.get('isApproved')
     info['helpful_votes'] = card.get('helpfulVotesCount')
     info['review_url'] = card.get('reviewUrl')
@@ -75,7 +74,36 @@ def extract_review_info(card):
     return info
 
 
-def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_container=None):
+
+def is_review_newer_than(last_review_date, reference_date):
+    """
+    Compare the last reviewed_date of a given kalio_id with a reference date.
+    Returns:
+        - True if the last review is newer than reference_date
+        - False if older or no review exists
+    """
+    if not last_review_date or not reference_date:
+        return False  # missing data
+
+    # Convert string to datetime if needed
+    if isinstance(reference_date, str):
+        try:
+            reference_date = datetime.strptime(reference_date, "%Y-%m-%d %H:%M:%S")
+        except Exception as e:
+            print(f"⚠️ Invalid reference_date string: {reference_date} ({e})")
+            return False
+
+    # Convert date to datetime if needed
+    if isinstance(reference_date, date) and not isinstance(reference_date, datetime):
+        reference_date = datetime.combine(reference_date, datetime.min.time())
+
+    return last_review_date >= reference_date
+
+
+def scrap_one_hotel(hotel_id, booking_id, payload_template, headers):
+    last_review_date = db.get_last_reviewed_date(hotel_id) # Should be called one time
+
+
     payload = payload_template.copy()
     payload['variables']['input']['hotelId'] = int(booking_id)
 
@@ -106,20 +134,19 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
     # Insert first batch
     for card in cards:
         info = extract_review_info(card)
+        if is_review_newer_than(last_review_date, info['reviewed_date']): return
         review_url = info.pop('review_url', None)  # remove it from kwargs
         db.insert_or_update_review(hotel_id, review_url, **info)
     collected += len(cards)
 
-    progress = None
-    if st_container:
-        progress = st_container.progress(0)
+   
+    progress = st.progress(0)
     
     total_reviews = data.get('reviewsCount', len(cards))
     skip = MAX_LIMIT
 
     while skip < total_reviews:
         wait()
-
 
         payload['variables']['input']['skip'] = skip
 
@@ -128,18 +155,20 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
         cards = response.get('data', {}).get('reviewListFrontend', {}).get('reviewCard', [])
         for card in cards:
             info = extract_review_info(card)
-
+            if is_review_newer_than(last_review_date, info['reviewed_date']):
+                if progress:
+                    progress.empty()
+                return
             review_url = info.pop('review_url', None)  # remove it from kwargs
             db.insert_or_update_review(hotel_id, review_url, **info)
 
         collected += len(cards)
-        if progress:
-            progress.progress(min(collected / total_reviews, 1.0))
+        progress.progress(min(collected / total_reviews, 1.0))
         
         skip += MAX_LIMIT
 
-    if progress:
-        progress.empty()
+    
+    progress.empty()
 
 
 # ========================================
@@ -147,36 +176,28 @@ def scrap_one_hotel(hotel_id, booking_id, payload_template, headers, st_containe
 # ========================================
 
 
-# Récupérer tous les hôtels depuis SQLite
-df_hotels = db.get_all_kalios()
+# Appel du module de filtrage personnalisé
+selected_hotels = filter_hotel_to_select(is_id_booking=True)
 
-if df_hotels.empty:
-    st.info("Aucun hôtel disponible dans la base.")
-else:
-    # Appel du module de filtrage personnalisé
-    selected_hotels = filter_hotel_to_select(df_hotels, is_id_booking=True)
+if selected_hotels is not None and not selected_hotels.empty:
+    st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")
 
-    if selected_hotels is not None and not selected_hotels.empty:
-        st.write(f"✅ {len(selected_hotels)} hôtels sélectionnés pour le scraping.")
+    if st.button("🚀 Lancer le scraping des hôtels sélectionnés"):
+        global_bar = st.progress(0)
+        status_text = st.empty()
+        total_hotels = len(selected_hotels)
 
-        if st.button("🚀 Lancer le scraping des hôtels sélectionnés"):
-            global_bar = st.progress(0)
-            status_text = st.empty()
-            total_hotels = len(selected_hotels)
+        for i, row in enumerate(selected_hotels.itertuples()):
+            hotel_id = row.Index
+            booking_id = row.id_booking
+            name = row.name
+            town = row.town
+            try:
+                status_text.text(f"🔍 Extraction des avis pour {name} ({town})...")
+                scrap_one_hotel(hotel_id, booking_id, PAYLOAD_TEMPLATE, HEADERS)
+            except Exception as e:
+                st.error(f"Erreur pour {name}: {e}")
+            global_bar.progress((i + 1) / total_hotels)
 
-            for i, row in enumerate(selected_hotels.itertuples()):
-
-                hotel_id = row.Index
-                booking_id = row.id_booking
-                name = row.name
-                town = row.town
-
-                try:
-                    status_text.text(f"🔍 Extraction des avis pour **{name} ({town})**...")
-                    scrap_one_hotel(hotel_id, booking_id, PAYLOAD_TEMPLATE, HEADERS, st_container=status_text)
-                except Exception as e:
-                    st.error(f"Erreur pour {name}: {e}")
-                global_bar.progress((i + 1) / total_hotels)
-
-            status_text.empty()
-            st.success("✅ Scraping terminé et avis insérés dans SQLite !")
+        status_text.empty()
+        st.success("✅ Scraping terminé et avis insérés dans SQLite !")

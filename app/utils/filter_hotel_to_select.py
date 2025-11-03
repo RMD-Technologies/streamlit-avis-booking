@@ -1,25 +1,34 @@
 import streamlit as st
 import pandas as pd
+from postgres import PostgresSingleton
 
-def filter_hotel_to_select(df_hotels: pd.DataFrame, is_id_booking=False) -> pd.DataFrame:
+db = PostgresSingleton()
+
+DF_HOTELS = db.get_all_kalios()
+
+def filter_hotel_to_select(is_id_booking=False) -> pd.DataFrame:
     """
     Streamlit module to filter hotels for selection.
     Filters all columns except 'id', 'url', 'id_booking' and allows selecting hotels
-    with NULL id_booking. Displays filtered table in main page.
+    with NULL id_booking. Automatically adds date filters for columns containing 'date'.
+    Displays filtered table in main page.
     """
     st.sidebar.subheader("🔎 Filtrage des hôtels")
 
-    filtered_df = df_hotels.copy()
+    filtered_df = DF_HOTELS.copy()
 
     # Filter by all columns except 'id', 'url', 'id_booking'
-    filterable_columns = [col for col in filtered_df.columns if col not in ['id', 'url', 'id_booking']]
+    filterable_columns = [col for col in filtered_df.columns if col not in ['id', 'url', 'id_booking', 'last_date_scrap']]
     
     for col in filterable_columns:
+        # Si le type est datetime ou si le nom contient 'date'
+      
         if filtered_df[col].dtype == object:
             search_val = st.sidebar.text_input(f"Recherche par {col}", key=col)
             if search_val:
                 filtered_df = filtered_df[filtered_df[col].str.contains(search_val, case=False, na=False)]
         else:
+            # numérique
             min_val, max_val = int(filtered_df[col].min()), int(filtered_df[col].max())
             selected_range = st.sidebar.slider(f"Filtrer par {col}", min_value=min_val, max_value=max_val,
                                                value=(min_val, max_val), key=col)

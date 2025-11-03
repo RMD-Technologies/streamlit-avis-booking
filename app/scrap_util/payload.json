@@ -6,7 +6,7 @@
       "hotelId": 1189592,
       "ufi": -1438604,
       "hotelCountryCode": "fr",
-      "sorter": "MOST_RELEVANT",
+      "sorter": "NEWEST_FIRST",
       "skip": 0,
       "limit": 25,
       "hotelScore": 6.9,

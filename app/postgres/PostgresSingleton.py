@@ -202,12 +202,90 @@ class PostgresSingleton:
             return 0
 
     def get_all_kalios(self):
+        """
+        Retourne un DataFrame avec tous les kalios et la date du dernier booking uniquement.
+        """
         try:
-            return pd.read_sql(
-                "SELECT * FROM kalios;", 
-                self.sql_alchemy_engine, 
-                index_col="id_kalio"
-            )
+            query = """
+            SELECT k.id_kalio,
+                k.name,
+                k.town,
+                k.url,
+                k.id_booking,
+                b.date_scrap AS last_date_scrap
+            FROM kalios k
+            LEFT JOIN LATERAL (
+                SELECT b2.date_scrap
+                FROM bookings b2
+                WHERE b2.id_kalio = k.id_kalio
+                ORDER BY b2.date_scrap DESC
+                LIMIT 1
+            ) b ON TRUE
+            ORDER BY k.id_kalio;
+            """
+
+            df = pd.read_sql(query, self.sql_alchemy_engine, index_col="id_kalio")
+            return df
         except Exception as e:
-            print(f"Error fetching kalios: {e}")
+            print(f"❌ Error fetching kalios with last booking date: {e}")
             return pd.DataFrame()
+    
+    def get_all_kalios_with_last_booking_and_score(self):
+        """
+        Retourne un DataFrame avec tous les kalios et leurs dernières données de booking
+        (celles correspondant à la date_scrap la plus récente pour chaque kalio).
+        """
+        try:
+            query = """
+            SELECT k.id_kalio,
+                k.name,
+                k.town,
+                k.url,
+                k.id_booking,
+                b.date_scrap,
+                b.hotel_staff,
+                b.hotel_services,
+                b.hotel_clean,
+                b.hotel_comfort,
+                b.hotel_value,
+                b.hotel_location,
+                b.hotel_free_wifi
+            FROM kalios k
+            LEFT JOIN LATERAL (
+                SELECT *
+                FROM bookings b2
+                WHERE b2.id_kalio = k.id_kalio
+                ORDER BY b2.date_scrap DESC
+                LIMIT 1
+            ) b ON TRUE
+            ORDER BY k.id_kalio;
+            """
+
+            df = pd.read_sql(query, self.sql_alchemy_engine, index_col="id_kalio")
+            return df
+
+        except Exception as e:
+            print(f"❌ Error fetching kalios with last booking: {e}")
+            return pd.DataFrame()
+    
+    def get_last_reviewed_date(self, id_kalio):
+        """
+        Returns the most recent 'reviewed_date' for a given kalio_id.
+        Returns None if no review exists.
+        """
+        cursor = self.get_cursor()
+        try:
+            cursor.execute("""
+                SELECT MAX(reviewed_date)
+                FROM reviews
+                WHERE id_kalio = %s;
+            """, (id_kalio,))
+            result = cursor.fetchone()
+            if result and result[0]:
+                return result[0]
+            return None
+        except Exception as e:
+            print(f"❌ Error fetching last reviewed date for id_kalio={id_kalio}: {e}")
+            return None
+    
+    from datetime import datetime, date
