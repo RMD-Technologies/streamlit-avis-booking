@@ -1,1 +1,3 @@
 from .filter_hotel_to_select import filter_hotel_to_select
+from .api import tokenize as api_tokenize, word_embeddings as api_word_embeddings, sentence_embeddings as api_sentence_embeddings
+from .normalize_to_range import normalize_to_range

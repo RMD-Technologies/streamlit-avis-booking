@@ -13,13 +13,13 @@ def filter_hotel_to_select(is_id_booking=False, is_selected_by_default=True) -> 
     with NULL id_booking. Automatically adds date filters for columns containing 'date'.
     Displays filtered table in main page.
     """
-    st.sidebar.subheader("🔎 Filtrage des hôtels")
+    st.sidebar.header("🔎 Filtrage des hôtels")
 
     if 'selected_hotels' not in st.session_state:
         st.session_state.selected_hotels = set()
     
 
-    filtered_df = DF_HOTELS.copy().reset_index(drop=True)
+    filtered_df = DF_HOTELS.copy()
 
     # Filter by all columns except 'id', 'url', 'id_booking'
     filterable_columns = [col for col in filtered_df.columns if col not in ['id', 'url', 'id_booking', 'last_date_scrap']]
@@ -68,7 +68,7 @@ def filter_hotel_to_select(is_id_booking=False, is_selected_by_default=True) -> 
 
     # Keep only the selected rows
     if selected_options:
-        filtered_df = DF_HOTELS.copy().reset_index(drop=True)
+        filtered_df = DF_HOTELS.copy()
         selected_ids = [int(opt.split(" - ")[0]) for opt in selected_options]
         filtered_df = filtered_df[filtered_df.index.isin(selected_ids)]
     else:

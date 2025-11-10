@@ -45,6 +45,18 @@ class PostgresSingleton:
         )
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS review_visualizations (
+                id SERIAL PRIMARY KEY,
+                id_kalio INTEGER NOT NULL REFERENCES kalios(id_kalio) ON DELETE CASCADE,
+                positive_tokens_html TEXT,
+                negative_tokens_html TEXT,
+                reviews_html TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(id_kalio)
+            )
+            """)
+
         # --- Table des évaluations (ratings) ---
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS bookings (
@@ -302,7 +314,7 @@ class PostgresSingleton:
             # Create placeholders for SQL IN clause
             placeholders = ", ".join(["%s"] * len(id_kalios))
             query = f"""
-                SELECT id_kalio, review_title, positive_text, negative_text
+                SELECT id_kalio, review_title, positive_text, negative_text, language
                 FROM reviews
                 WHERE id_kalio IN ({placeholders})
                 ORDER BY id_kalio;
@@ -312,16 +324,40 @@ class PostgresSingleton:
 
             result = {}
             for row in rows:
-                id_kalio, title, positive, negative = row
+                id_kalio, title, positive, negative, language = row
                 if id_kalio not in result:
                     result[id_kalio] = []
                 result[id_kalio].append({
                     "review_title": title,
                     "positive_text": positive,
-                    "negative_text": negative
+                    "negative_text": negative,
+                    "language_text": language
                 })
             return result
 
         except Exception as e:
             print(f"❌ Error fetching reviews for id_kalios={id_kalios}: {e}")
             return {}
+
+
+    def insert_review_visualization(self, id_kalio, positive_html, negative_html, reviews_html):
+        """
+        Insert a new HTML visualization entry for a hotel.
+        If an entry already exists for the hotel, it can be replaced (optional).
+        """
+        cursor = self.get_cursor()
+        
+        cursor.execute("""
+            INSERT INTO review_visualizations (id_kalio, positive_tokens_html, negative_tokens_html, reviews_html)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (id_kalio) 
+            DO UPDATE SET 
+                positive_tokens_html = EXCLUDED.positive_tokens_html,
+                negative_tokens_html = EXCLUDED.negative_tokens_html,
+                reviews_html = EXCLUDED.reviews_html,
+                created_at = CURRENT_TIMESTAMP
+            """,
+            (id_kalio, positive_html, negative_html, reviews_html)
+        )
+
+        print(f"✅ Visualization inserted/updated for hotel id {id_kalio}")

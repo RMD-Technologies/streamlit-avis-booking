@@ -1,0 +1,9 @@
+selenium
+webdriver-manager
+pandas
+streamlit
+psycopg2
+SQLAlchemy
+tqdm
+bertopic
+scikit-learn

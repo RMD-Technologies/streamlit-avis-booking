@@ -21,18 +21,35 @@ services:
 
   streamlit-app:
     build:
-      context: .
+      context: app
       dockerfile: Dockerfile
     container_name: streamlit_app
     ports:
       - "8501:8501"
     environment:
+      TOKENIZE_API_URL: http://api_app:${API_PORT}/tokenizes
+      WORD_EMBEDDINGS_API_URL: http://api_app:${API_PORT}//word_embeddings
+      SENTENCE_EMBEDDINGS_API_URL: http://api_app:${API_PORT}/sentence_embeddings
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      STREAMLIT_SERVER_ENABLE_STATIC_SERVING: true
     depends_on:
       - db
     volumes:
-    - ./app:/app   # <-- Mount local folder to container
+    - ./app:/app
 
+  api-app:
+    build:
+      context: api
+      dockerfile: Dockerfile
+    container_name: api_app
+    env_file:
+      - .env
+    ports:
+      - "${API_PORT}:8000"
+    volumes:
+      - ./api:/app
+    
+  
 volumes:
   postgres_data:
   postgres_data_demo:
